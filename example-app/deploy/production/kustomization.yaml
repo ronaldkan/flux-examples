@@ -1,0 +1,16 @@
+# This file tells flux to convert the yamls into configMap or secrets
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+generatorOptions:
+  disableNameSuffixHash: true
+configMapGenerator:
+  - name: ${CLUSTER_SERVICE_NAME}-base-values
+    files:
+      - values.yaml=../base/values.yaml
+  - name: ${CLUSTER_SERVICE_NAME}-values
+    files:
+      - values.yaml=values.yaml
+secretGenerator:
+  - name: ${CLUSTER_SERVICE_NAME}-secrets
+    files:
+      - values.yaml=secrets.yaml

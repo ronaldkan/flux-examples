@@ -1,0 +1,5 @@
+deployment:
+  replicas: 1
+
+docker:
+  tag: staging-5cdefg

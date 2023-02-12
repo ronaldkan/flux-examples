@@ -1,0 +1,33 @@
+# This alert will make a generic request to notification receiver service when a reoncile is completed
+apiVersion: notification.toolkit.fluxcd.io/v1beta2
+kind: Alert
+metadata:
+  name: example-app-receiver
+  namespace: flux-system
+spec:
+  summary: ${CLUSTER_ENV},example1
+  providerRef:
+    name: notification-receiver-provider
+  eventSeverity: info
+  eventSources:
+    - kind: Kustomization
+      name: example-app-${CLUSTER_ENV}
+      namespace: flux-system
+---
+# This alert will send a message to slack when a reoncile is completed
+apiVersion: notification.toolkit.fluxcd.io/v1beta2
+kind: Alert
+metadata:
+  name: example-app-slack
+  namespace: flux-system
+spec:
+  providerRef:
+    name: slack
+  eventSeverity: info
+  eventSources:
+    - kind: HelmRelease
+      name: example-app
+      namespace: example1
+    - kind: Kustomization
+      name: example-app-${CLUSTER_ENV}
+      namespace: flux-system

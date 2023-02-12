@@ -1,0 +1,10 @@
+apiVersion: kustomize.config.k8s.io/v1beta1
+kind: Kustomization
+resources:
+- gotk-components.yaml
+- gotk-sync.yaml
+- ../../base/namespace
+- ../../base/repository
+patchesStrategicMerge:
+- ../../base/flux-system/nodeselector-patch.yaml
+- ../../base/flux-system/staging/serviceaccount-patch.yaml

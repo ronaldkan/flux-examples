@@ -1,0 +1,10 @@
+fullnameOverride: ${CLUSTER_SERVICE_NAME}
+
+deployment:
+  replicas: 3
+
+docker:
+  repository: <account-id>.dkr.ecr.ap-southeast-1.amazonaws.com/example-app
+
+env:
+  NODE_ENV: ${CLUSTER_ENV}

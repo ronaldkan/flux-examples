@@ -1,0 +1,73 @@
+# This is the helm deployment for deploying the application
+apiVersion: helm.toolkit.fluxcd.io/v2beta1
+kind: HelmRelease
+metadata:
+  name: example-app
+  namespace: example1
+spec:
+  interval: 1m0s
+  timeout: 3m0s
+  chart:
+    spec:
+      chart: helm-template
+      version: '0.0.1'
+      sourceRef:
+        kind: HelmRepository
+        name: ecr-helm-charts
+        namespace: flux-system
+      interval: 10m
+      reconcileStrategy: ChartVersion
+  values:
+    env:
+      # This are auto-injected variables that can be used in the helm chart or application
+      CLUSTER_ENV: ${CLUSTER_ENV}
+      CLUSTER_DOMAIN: ${CLUSTER_DOMAIN}
+      CLUSTER_SERVICE_NAME: ${CLUSTER_SERVICE_NAME}
+    annotations:
+      configmap.reloader.stakater.com/reload: "example-app-base-values, example-app-values"
+      secret.reloader.stakater.com/reload: "example-app-base-secrets, example-app-secrets"
+  # The values that are used by the charts are defined as configMap and secret
+  valuesFrom:
+    - kind: ConfigMap
+      name: example-app-base-values
+      optional: true
+    - kind: Secret
+      name: example-app-base-secrets
+      optional: true
+    - kind: ConfigMap
+      name: example-app-values
+      optional: true
+    - kind: Secret
+      name: example-app-secrets
+      optional: true
+---
+# This is the resource that tells Flux to create the configMap and secret required for the helm deployment
+apiVersion: kustomize.toolkit.fluxcd.io/v1beta1
+kind: Kustomization
+metadata:
+  name: example-app-${CLUSTER_ENV}
+  namespace: flux-system
+spec:
+  serviceAccountName: custom-kustomize-controller
+  targetNamespace: example1
+  timeout: 5m0s
+  interval: 1m0s
+  path: ./deploy/${CLUSTER_ENV}
+  prune: true
+  sourceRef:
+    kind: GitRepository
+    name: example-app
+    namespace: flux-system
+  healthChecks:
+    - apiVersion: helm.toolkit.fluxcd.io/v2beta1
+      kind: HelmRelease
+      name: example-app
+      namespace: example1
+  postBuild:
+    substitute:
+      CLUSTER_ENV: ${CLUSTER_ENV}
+      CLUSTER_DOMAIN: ${CLUSTER_DOMAIN}
+      CLUSTER_SERVICE_NAME: ${CLUSTER_SERVICE_NAME}
+  decryption:
+    provider: sops
+
